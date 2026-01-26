@@ -13,7 +13,7 @@ import Events from './pages/Events';
 import EventsDisplay from './components/EventsDisplay';
 import FeedbackDisplay from './components/FeedbackDisplay';
 // 🔥 1. MEKA IMPORT KARANNA (MISSING IN YOUR CODE)
-import CommunityChat from './components/CommunityChat'; 
+
 import Footer from './components/Footer'; // 🔥 New Import
 import SupportWidget from './components/SupportWidget'; // 🔥 New Import
 import AboutUs from './pages/AboutUs'; // 🔥 New Import
@@ -135,7 +135,7 @@ const LandingPage = () => {
       <StatsBanner />
       <LiveStream />
       <EventsDisplay />
-      <CommunityChat />
+      
       <Leaderboard />
       <FeaturedPackages />
       <FeedbackDisplay />
