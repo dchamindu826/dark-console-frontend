@@ -81,10 +81,10 @@ const Dashboard = () => {
         
         {/* 1. Revenue & High Level Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <StatCard icon={DollarSign} label="Total Revenue" value={`LKR ${stats.totalRevenue.toLocaleString()}`} color="text-[var(--gta-green)]" bg="bg-green-500/10" border="border-green-500/20"/>
+            <StatCard icon={DollarSign} label="Total Revenue" value={`LKR ${(stats.totalRevenue || 0).toLocaleString()}`} color="text-[var(--gta-green)]" bg="bg-green-500/10" border="border-green-500/20"/>
             <StatCard icon={ShoppingBag} label="Orders Completed" value={stats.completedOrders} color="text-blue-400" bg="bg-blue-500/10" border="border-blue-500/20"/>
             <StatCard icon={Users} label="Active Admins" value={stats.activeAdmins} color="text-purple-400" bg="bg-purple-500/10" border="border-purple-500/20"/>
-            <StatCard icon={Layout} label="Services Revenue" value={`LKR ${stats.serviceRevenue.toLocaleString()}`} color="text-yellow-400" bg="bg-yellow-500/10" border="border-yellow-500/20"/>
+            <StatCard icon={Layout} label="Services Revenue" value={`LKR ${(stats.serviceRevenue || 0).toLocaleString()}`} color="text-yellow-400" bg="bg-yellow-500/10" border="border-yellow-500/20"/>
         </div>
 
         {/* 2. Charts Section */}
