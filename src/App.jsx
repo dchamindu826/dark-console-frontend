@@ -14,6 +14,11 @@ import EventsDisplay from './components/EventsDisplay';
 import FeedbackDisplay from './components/FeedbackDisplay';
 // 🔥 1. MEKA IMPORT KARANNA (MISSING IN YOUR CODE)
 import CommunityChat from './components/CommunityChat'; 
+import Footer from './components/Footer'; // 🔥 New Import
+import SupportWidget from './components/SupportWidget'; // 🔥 New Import
+import AboutUs from './pages/AboutUs'; // 🔥 New Import
+import PrivacyPolicy from './pages/PrivacyPolicy'; // 🔥 New Import
+import Terms from './pages/Terms'; // 🔥 New Import
 
 // Admin Components
 import AdminLogin from './pages/admin/Login';
@@ -127,25 +132,19 @@ const LandingPage = () => {
     <div className="bg-[#09090b] min-h-screen text-white font-sans selection:bg-green-500/30">
       <Header />
       <HeroSection />
-      
       <StatsBanner />
-
       <LiveStream />
-      
       <EventsDisplay />
-
-      {/* 🔥 2. ADDED COMMUNITY CHAT HERE (ABOVE LEADERBOARD) */}
       <CommunityChat />
-      
       <Leaderboard />
-      
       <FeaturedPackages />
-
       <FeedbackDisplay />
-
-      <footer className="py-10 text-center text-zinc-600 text-xs uppercase font-bold tracking-widest border-t border-white/5">
-        Dark Console &copy; 2026. All Rights Reserved.
-      </footer>
+      
+      {/* 🔥 Footer Replaced */}
+      <Footer /> 
+      
+      {/* 🔥 Widget Added */}
+      <SupportWidget /> 
     </div>
   );
 };
@@ -159,6 +158,9 @@ function App() {
         <Route path="/services" element={<Services />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/events" element={<Events />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<Terms />} />
 
         <Route path="/admin/login" element={<AdminLogin />} />
         

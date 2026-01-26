@@ -74,7 +74,7 @@ const CommunityChat = () => {
                 {/* Warning Banner */}
                 <div className="bg-red-500/10 border-b border-red-500/20 p-2 flex items-center gap-2 text-red-500 text-[10px] font-bold uppercase tracking-wide justify-center">
                     <AlertTriangle size={14}/>
-                    <span>Warning: No Hate Speech or Spam.</span>
+                    <span>Warning: No Hate Speech,Spam,Porn contents and Links.</span>
                 </div>
 
                 {/* Chat Area */}
