@@ -12,13 +12,14 @@ import Profile from './pages/Profile';
 import Events from './pages/Events';
 import EventsDisplay from './components/EventsDisplay';
 import FeedbackDisplay from './components/FeedbackDisplay';
-// 🔥 1. MEKA IMPORT KARANNA (MISSING IN YOUR CODE)
+// 🔥 1. IMPORT COMMUNITY CHAT
 
-import Footer from './components/Footer'; // 🔥 New Import
-import SupportWidget from './components/SupportWidget'; // 🔥 New Import
-import AboutUs from './pages/AboutUs'; // 🔥 New Import
-import PrivacyPolicy from './pages/PrivacyPolicy'; // 🔥 New Import
-import Terms from './pages/Terms'; // 🔥 New Import
+
+import Footer from './components/Footer'; 
+import SupportWidget from './components/SupportWidget'; 
+import AboutUs from './pages/AboutUs'; 
+import PrivacyPolicy from './pages/PrivacyPolicy'; 
+import Terms from './pages/Terms'; 
 
 // Admin Components
 import AdminLogin from './pages/admin/Login';
@@ -140,10 +141,7 @@ const LandingPage = () => {
       <FeaturedPackages />
       <FeedbackDisplay />
       
-      {/* 🔥 Footer Replaced */}
       <Footer /> 
-      
-      {/* 🔥 Widget Added */}
       <SupportWidget /> 
     </div>
   );

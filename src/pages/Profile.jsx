@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Package, Copy, Check, Ticket, ExternalLink, Send, X, Image, Reply } from 'lucide-react';
+import { MessageSquare, Package, Copy, Check, Ticket, ExternalLink, Send, X, Image, Reply, Clock } from 'lucide-react';
 import Header from '../components/Header';
 import apiClient from '../api/client';
 import { formatLKR } from '../utils/currency';
@@ -12,19 +12,31 @@ const socket = io.connect("https://dark-console-backend.onrender.com");
 // --- USER CHAT COMPONENT (WITH IMAGE & REPLY) ---
 const UserChatWindow = ({ order, onClose, username }) => {
     const [msg, setMsg] = useState("");
-    const [image, setImage] = useState(null); // 🔥 Image State
-    const [replyTo, setReplyTo] = useState(null); // 🔥 Reply State
+    const [image, setImage] = useState(null);
+    const [replyTo, setReplyTo] = useState(null);
     const [list, setList] = useState([]);
     const scrollRef = useRef(null);
     
     useEffect(() => {
         socket.emit("join_room", order.chatRoomId);
-        // Load history logic should be here ideally (if using socket history fetch)
-        socket.on("receive_message", (data) => {
-            setList((l) => [...l, data]);
+        
+        // Listen for incoming messages
+        const handleReceiveMessage = (data) => {
+            setList((prev) => [...prev, data]);
             scrollToBottom();
-        });
-        return () => socket.off("receive_message");
+        };
+
+        socket.on("receive_message", handleReceiveMessage);
+
+        // Load existing messages
+        apiClient.get(`/orders/${order._id}/messages`)
+            .then(res => {
+                setList(res.data);
+                scrollToBottom();
+            })
+            .catch(err => console.error(err));
+
+        return () => socket.off("receive_message", handleReceiveMessage);
     }, [order]);
 
     const scrollToBottom = () => {
@@ -43,17 +55,20 @@ const UserChatWindow = ({ order, onClose, username }) => {
     const send = async () => {
         if(msg !== "" || image) {
             const data = { 
+                orderId: order._id, // Save to DB requirement
                 room: order.chatRoomId, 
-                author: username, 
+                senderId: auth.currentUser.uid,
+                senderName: username, 
                 message: msg, 
-                image: image, // 🔥 Send Image
-                replyTo: replyTo, // 🔥 Send Reply
-                time: new Date().toLocaleTimeString(), 
-                type: 'user' 
+                image: image, 
+                replyTo: replyTo, 
+                isAdmin: false // This is user
             };
+
+            // Send via Socket
             await socket.emit("send_message", data);
             
-            // Note: Socket echos back
+            // Note: Socket echos back via 'receive_message', so we don't manually add to list
             setMsg("");
             setImage(null);
             setReplyTo(null);
@@ -62,63 +77,67 @@ const UserChatWindow = ({ order, onClose, username }) => {
 
     return (
         <div className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4">
-            <div className="bg-zinc-900 w-full max-w-md h-[550px] flex flex-col rounded-xl border border-zinc-700">
+            <div className="bg-zinc-900 w-full max-w-md h-[600px] flex flex-col rounded-xl border border-zinc-700 shadow-2xl">
                 {/* Header */}
                 <div className="p-4 border-b border-zinc-700 flex justify-between items-center bg-zinc-800 rounded-t-xl">
                     <h3 className="text-white font-bold flex flex-col">
-                        <span>Service Support</span>
+                        <span>Support Chat</span>
                         <span className="text-[10px] text-[var(--gta-green)] font-normal">Order #{order._id.slice(-4)}</span>
                     </h3>
                     <button onClick={onClose} className="text-zinc-400 hover:text-white"><X size={20}/></button>
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-black/30">
-                    {list.map((m,i) => (
-                        <div key={i} className={`flex flex-col ${m.type === 'user' ? 'items-end' : 'items-start'} group`}>
-                            
-                             <div className={`flex items-end gap-2 ${m.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                                <div className={`px-3 py-2 rounded-lg text-sm max-w-[85%] relative ${
-                                    m.type === 'user' 
-                                    ? 'bg-[var(--gta-green)] text-black font-medium' 
-                                    : 'bg-zinc-800 text-white border border-zinc-700'
-                                }`}>
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-black/30 custom-scrollbar">
+                    {list.map((m,i) => {
+                        const isMe = !m.isAdmin; // If isAdmin is false, it's the user (me)
+                        return (
+                            <div key={i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} group`}>
+                                <div className={`flex items-end gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
                                     
-                                    {/* Render Reply Context */}
-                                    {m.replyTo && (
-                                        <div className={`mb-1 p-1 rounded text-xs border-l-2 ${m.type === 'user' ? 'bg-black/10 border-black' : 'bg-black/30 border-[var(--gta-green)]'}`}>
-                                            <p className="font-bold opacity-70">{m.replyTo.author}</p>
-                                            <p className="truncate opacity-70 max-w-[150px]">{m.replyTo.image ? '📷 [Image]' : m.replyTo.message}</p>
-                                        </div>
-                                    )}
+                                    <div className={`px-3 py-2 rounded-lg text-sm max-w-[85%] relative ${
+                                        isMe 
+                                        ? 'bg-[var(--gta-green)] text-black font-medium rounded-tr-none' 
+                                        : 'bg-zinc-800 text-white border border-zinc-700 rounded-tl-none'
+                                    }`}>
+                                        {/* Reply Context */}
+                                        {m.replyTo && (
+                                            <div className={`mb-1 p-1 rounded text-xs border-l-2 ${isMe ? 'bg-black/10 border-black' : 'bg-black/30 border-[var(--gta-green)]'}`}>
+                                                <p className="font-bold opacity-70">{m.replyTo.senderName || m.replyTo.author}</p>
+                                                <p className="truncate opacity-70 max-w-[150px]">{m.replyTo.image ? '📷 [Image]' : m.replyTo.message}</p>
+                                            </div>
+                                        )}
 
-                                    {/* Render Image */}
-                                    {m.image && (
-                                        <img src={m.image} alt="Sent" className="rounded-lg mb-1 max-w-full max-h-48 object-cover"/>
-                                    )}
+                                        {/* Image */}
+                                        {m.image && (
+                                            <img src={m.image} alt="Sent" className="rounded-lg mb-1 max-w-full max-h-48 object-cover"/>
+                                        )}
 
-                                    {m.message && <span>{m.message}</span>}
+                                        {/* Text */}
+                                        {m.message && <span>{m.message}</span>}
+                                    </div>
+
+                                    {/* Reply Button */}
+                                    <button onClick={() => setReplyTo(m)} className="opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-white transition-opacity">
+                                        <Reply size={14}/>
+                                    </button>
                                 </div>
-
-                                {/* Reply Button */}
-                                <button onClick={() => setReplyTo(m)} className="opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-white transition-opacity">
-                                    <Reply size={14}/>
-                                </button>
-                             </div>
-                             <span className="text-[9px] text-zinc-600 mt-0.5 px-1">{m.time}</span>
-                        </div>
-                    ))}
+                                <span className="text-[9px] text-zinc-600 mt-0.5 px-1">
+                                    {m.senderName} • {new Date(m.createdAt || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                </span>
+                            </div>
+                        );
+                    })}
                     <div ref={scrollRef}></div>
                 </div>
 
                 {/* Input Area */}
                 <div className="p-4 border-t border-zinc-700 bg-zinc-800 rounded-b-xl">
-                    
                     {/* Reply Preview */}
                     {replyTo && (
                         <div className="flex items-center justify-between bg-black/40 p-2 rounded mb-2 border-l-2 border-[var(--gta-green)]">
                             <div className="text-xs text-zinc-300">
-                                <span className="font-bold text-[var(--gta-green)]">Replying to {replyTo.author}</span>
+                                <span className="font-bold text-[var(--gta-green)]">Replying to {replyTo.senderName || replyTo.author}</span>
                                 <p className="truncate max-w-[200px]">{replyTo.image ? '📷 [Image]' : replyTo.message}</p>
                             </div>
                             <button onClick={() => setReplyTo(null)} className="text-zinc-500 hover:text-white"><X size={14}/></button>
@@ -134,7 +153,7 @@ const UserChatWindow = ({ order, onClose, username }) => {
                     )}
 
                     <div className="flex gap-2">
-                        <label className="bg-zinc-700 hover:bg-zinc-600 p-2 rounded cursor-pointer text-white flex items-center justify-center">
+                        <label className="bg-zinc-700 hover:bg-zinc-600 p-2 rounded-lg cursor-pointer text-white flex items-center justify-center transition-colors">
                             <Image size={20}/>
                             <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                         </label>
@@ -143,10 +162,12 @@ const UserChatWindow = ({ order, onClose, username }) => {
                             value={msg} 
                             onChange={e=>setMsg(e.target.value)} 
                             onKeyPress={(e) => e.key === 'Enter' && send()}
-                            className="flex-1 bg-black p-2 text-white rounded border border-zinc-600 focus:border-[var(--gta-green)] outline-none" 
-                            placeholder={image ? "Add caption..." : "Type..."} 
+                            className="flex-1 bg-black p-2 text-white rounded-lg border border-zinc-600 focus:border-[var(--gta-green)] outline-none transition-all" 
+                            placeholder={image ? "Add caption..." : "Type a message..."} 
                         />
-                        <button onClick={send} className="bg-[var(--gta-green)] px-4 rounded text-black font-bold hover:bg-emerald-500">Send</button>
+                        <button onClick={send} className="bg-[var(--gta-green)] px-4 rounded-lg text-black font-bold hover:bg-emerald-500 transition-colors">
+                            <Send size={18}/>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -154,6 +175,7 @@ const UserChatWindow = ({ order, onClose, username }) => {
     );
 };
 
+// --- MAIN PROFILE PAGE ---
 const Profile = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -167,6 +189,7 @@ const Profile = () => {
           if (u) {
               setUser(u);
               try {
+                  // 🔥 Ensure backend route /api/orders/myorders exists
                   const { data } = await apiClient.get(`/orders/myorders?uid=${u.uid}`); 
                   setOrders(data);
               } catch (error) {
@@ -194,7 +217,8 @@ const Profile = () => {
     <div className="bg-[#09090b] min-h-screen pt-24 pb-20 px-4">
         <Header />
         <div className="max-w-5xl mx-auto">
-            <div className="flex items-center gap-4 mb-8">
+            {/* User Info */}
+            <div className="flex items-center gap-4 mb-8 bg-zinc-900/50 p-6 rounded-2xl border border-zinc-800">
                 <img src={user.photoURL} className="w-16 h-16 rounded-full border-2 border-[var(--gta-green)]"/>
                 <div>
                     <h1 className="text-3xl font-black uppercase text-white">{user.displayName}</h1>
@@ -202,71 +226,87 @@ const Profile = () => {
                 </div>
             </div>
             
-            <h2 className="text-xl font-bold text-white mb-6 border-b border-zinc-800 pb-2">Order History</h2>
+            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <Package className="text-[var(--gta-green)]"/> Order History
+            </h2>
 
             <div className="grid gap-4">
                 {orders.map(order => (
-                    <div key={order._id} className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div key={order._id} className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4 hover:border-zinc-700 transition-colors">
+                        
+                        {/* Order Details */}
                         <div className="flex items-center gap-4 w-full md:w-auto">
-                            <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center text-[var(--gta-green)]">
+                            <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center text-[var(--gta-green)] border border-zinc-800">
                                 {order.orderType === 'event' ? <Ticket /> : <Package />}
                             </div>
                             <div className="flex-1">
                                 <h3 className="font-bold text-white text-lg">{order.packageDetails.title}</h3>
                                 <div className="flex flex-wrap gap-4 text-xs text-zinc-500 mt-1">
-                                    <span>Order ID: #{order._id.slice(-6)}</span>
-                                    <span className="uppercase border border-zinc-700 px-1 rounded bg-black">{order.orderType}</span>
+                                    <span>#{order._id.slice(-6)}</span>
+                                    <span className="uppercase bg-black px-2 py-0.5 rounded border border-zinc-800">{order.orderType}</span>
+                                    <span className="text-zinc-400">{new Date(order.createdAt).toLocaleDateString()}</span>
                                 </div>
                                 <p className="text-[var(--gta-green)] font-mono font-bold mt-1">{formatLKR(order.packageDetails.price)}</p>
                             </div>
                         </div>
 
-                        {/* Crew Code Display */}
-                        {order.orderType === 'event' && order.crewCode && (order.status === 'pool' || order.status === 'completed') && (
-                            <div className="bg-black/40 border border-[var(--gta-green)]/30 p-3 rounded-lg flex flex-col items-center">
-                                <p className="text-[10px] text-zinc-400 uppercase font-bold mb-1">Crew Invite Code</p>
-                                <div className="flex items-center gap-2">
-                                    <code className="text-white font-mono text-xl font-bold tracking-widest">{order.crewCode}</code>
-                                    <button onClick={() => handleCopy(order.crewCode)} className="text-zinc-500 hover:text-white">
-                                        {copied ? <Check size={16} className="text-green-500"/> : <Copy size={16}/>}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="flex items-center gap-4">
-                            <span className={`px-3 py-1 rounded text-xs font-bold uppercase border ${
-                                order.status === 'completed' || order.status === 'pool' ? 'bg-green-900/30 text-green-500 border-green-900' :
-                                order.status === 'in_progress' ? 'bg-blue-900/30 text-blue-500 border-blue-900' :
-                                order.status === 'cancelled' ? 'bg-red-900/30 text-red-500 border-red-900' :
-                                'bg-yellow-900/30 text-yellow-500 border-yellow-900'
+                        {/* Status & Actions */}
+                        <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto justify-end">
+                            
+                            {/* Status Badge */}
+                            <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border ${
+                                order.status === 'completed' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                                order.status === 'in_progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                order.status === 'pool' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : // Approved by Admin
+                                order.status === 'cancelled' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                'bg-orange-500/10 text-orange-400 border-orange-500/20' // Pending
                             }`}>
-                                {order.status === 'in_progress' ? 'Processing' : 
-                                 order.status === 'pool' ? 'Approved' : 
-                                 order.status}
+                                {order.status === 'pending' && <span className="flex items-center gap-1"><Clock size={12}/> Pending Approval</span>}
+                                {order.status === 'pool' && 'Approved (Waiting)'}
+                                {order.status === 'in_progress' && 'Agent Assigned'}
+                                {order.status === 'completed' && 'Completed'}
+                                {order.status === 'cancelled' && 'Cancelled'}
                             </span>
 
-                            {/* LOGIC UPDATE: Only show Chat button for NON-EVENT orders */}
-                            {order.orderType !== 'event' && (order.status === 'in_progress' || order.status === 'pool') && (
-                                <button onClick={() => setChatOrder(order)} className="bg-white hover:bg-[var(--gta-green)] text-black px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
-                                    <MessageSquare size={16}/> Chat
+                            {/* Crew Code (If Event & Approved) */}
+                            {order.orderType === 'event' && order.crewCode && (order.status === 'pool' || order.status === 'completed') && (
+                                <button onClick={() => handleCopy(order.crewCode)} className="flex items-center gap-2 bg-black border border-zinc-700 px-3 py-1.5 rounded-lg hover:border-[var(--gta-green)] transition-colors group">
+                                    <span className="text-zinc-400 text-xs">Code:</span>
+                                    <code className="text-white font-mono font-bold">{order.crewCode}</code>
+                                    {copied ? <Check size={14} className="text-green-500"/> : <Copy size={14} className="text-zinc-500 group-hover:text-white"/>}
                                 </button>
                             )}
 
-                            {/* For Events, show a link to Events page */}
-                            {order.orderType === 'event' && (order.status === 'pool' || order.status === 'completed') && (
+                            {/* 🔥 CHAT BUTTON: ONLY when In Progress (Assigned) */}
+                            {order.orderType !== 'event' && order.status === 'in_progress' && (
+                                <button onClick={() => setChatOrder(order)} className="bg-white hover:bg-[var(--gta-green)] text-black px-5 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-lg shadow-white/5">
+                                    <MessageSquare size={16}/> Chat with Agent
+                                </button>
+                            )}
+
+                             {/* Event Link */}
+                             {order.orderType === 'event' && (order.status === 'pool' || order.status === 'completed') && (
                                 <button onClick={() => navigate('/events')} className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
-                                    <ExternalLink size={16}/> Go to Event
+                                    <ExternalLink size={16}/> Event Page
                                 </button>
                             )}
                         </div>
                     </div>
                 ))}
-                {!loading && orders.length === 0 && <p className="text-zinc-500 text-center py-10">No orders found.</p>}
+                {!loading && orders.length === 0 && (
+                    <div className="text-center py-20 bg-zinc-900/30 rounded-xl border border-dashed border-zinc-800">
+                        <Package size={48} className="mx-auto text-zinc-700 mb-4"/>
+                        <p className="text-zinc-500">You haven't placed any orders yet.</p>
+                        <button onClick={() => navigate('/services')} className="mt-4 text-[var(--gta-green)] hover:underline">Browse Store</button>
+                    </div>
+                )}
             </div>
         </div>
+        
+        {/* Chat Window Popup */}
         {chatOrder && <UserChatWindow order={chatOrder} onClose={()=>setChatOrder(null)} username={user.displayName} />}
     </div>
   );
 };
+
 export default Profile;
