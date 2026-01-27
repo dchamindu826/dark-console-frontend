@@ -6,7 +6,7 @@ import apiClient from '../api/client';
 import { formatLKR } from '../utils/currency';
 import { auth, googleProvider } from '../firebase';
 import { signInWithPopup } from "firebase/auth";
-import { useNavigate } from 'react-router-dom'; // IMPORT THIS
+import { useNavigate } from 'react-router-dom';
 
 const Services = () => {
   const [services, setServices] = useState([]);
@@ -15,7 +15,7 @@ const Services = () => {
   
   // Auth & Nav
   const [user, setUser] = useState(null);
-  const navigate = useNavigate(); // FOR REDIRECT
+  const navigate = useNavigate();
 
   // Checkout States
   const [platform, setPlatform] = useState("Steam");
@@ -67,13 +67,15 @@ const Services = () => {
 
   const handlePlaceOrder = async () => {
     if(!contact || !slipImage) return alert("Please enter WhatsApp number and upload slip!");
+    if(!user) return alert("Please login to place an order!"); // Safety check
     
     setIsSubmitting(true);
     const finalPrice = selectedProduct.price * ((100 - discount) / 100);
 
     const orderData = {
+        userId: user.uid, // 🔥🔥 MEKA ADD KARANNA ONA (Meka nisa thama profile eke nopenune)
         orderType: 'service',
-        customer: { name: user?.displayName, contact: contact },
+        customer: { name: user.displayName, contact: contact },
         packageDetails: {
             title: selectedProduct.title,
             price: finalPrice,
@@ -87,13 +89,14 @@ const Services = () => {
         await apiClient.post('/orders', orderData);
         alert("Order Placed Successfully!");
         
-        // REDIRECT TO PROFILE
+        // Clear & Redirect
         setSelectedProduct(null);
         setSlipImage(null);
         navigate('/profile'); 
         
     } catch (error) {
-        alert("Order Failed.");
+        console.error("Order Error:", error);
+        alert("Order Failed. Please try again.");
     } finally {
         setIsSubmitting(false);
     }
@@ -117,7 +120,6 @@ const Services = () => {
       `}</style>
 
       <div className="max-w-7xl mx-auto px-4">
-        {/* ... (Titles & Tabs - Same as before) ... */}
         <div className="text-center mb-12">
            <h1 className="text-4xl md:text-5xl font-black uppercase mb-4 tracking-tight">
               Premium <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--gta-green)] to-emerald-800">Store</span>
@@ -189,7 +191,6 @@ const Services = () => {
                       <h2 className="text-2xl font-black uppercase text-white mb-2 leading-none">{selectedProduct.title}</h2>
                       <p className="text-[var(--gta-green)] font-sans font-bold text-2xl mb-4">{formatLKR(selectedProduct.price)}</p>
                       
-                      {/* Description with HIDDEN Scrollbar */}
                       <p className="text-zinc-400 text-sm whitespace-pre-wrap max-h-[200px] overflow-y-auto scrollbar-hide">
                           {selectedProduct.description}
                       </p>
@@ -231,7 +232,7 @@ const Services = () => {
                               <button onClick={handleApplyCoupon} className="bg-zinc-800 px-4 rounded-lg font-bold uppercase text-xs hover:text-[var(--gta-green)]"><Tag size={16}/></button>
                           </div>
 
-                          {/* PAYMENT OPTIONS (UPDATED) */}
+                          {/* PAYMENT OPTIONS */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {/* Bank Details */}
                               <div className="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
