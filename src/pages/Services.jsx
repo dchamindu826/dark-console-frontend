@@ -237,10 +237,10 @@ const Services = () => {
                               <div className="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
                                   <p className="text-xs font-bold text-zinc-400 uppercase border-b border-zinc-800 pb-2 mb-2">Local Bank Transfer</p>
                                   <div className="space-y-2">
-                                      <div><p className="text-[10px] text-zinc-500 uppercase">Bank</p><p className="text-white text-xs font-bold">Sampath Bank</p></div>
-                                      <div><p className="text-[10px] text-zinc-500 uppercase">Branch</p><p className="text-white text-xs font-bold">Colombo Super</p></div>
-                                      <div><p className="text-[10px] text-zinc-500 uppercase">Acc Name</p><p className="text-white text-xs font-bold">Dark Console Inc</p></div>
-                                      <div><p className="text-[10px] text-zinc-500 uppercase">Acc No</p><p className="text-[var(--gta-green)] font-mono font-bold text-sm">1234 5678 9000</p></div>
+                                      <div><p className="text-[10px] text-zinc-500 uppercase">Bank</p><p className="text-white text-xs font-bold">Peoples Bank</p></div>
+                                      <div><p className="text-[10px] text-zinc-500 uppercase">Branch</p><p className="text-white text-xs font-bold">Kahawatta</p></div>
+                                      <div><p className="text-[10px] text-zinc-500 uppercase">Acc Name</p><p className="text-white text-xs font-bold">Yomal Diloshana</p></div>
+                                      <div><p className="text-[10px] text-zinc-500 uppercase">Acc No</p><p className="text-[var(--gta-green)] font-mono font-bold text-sm">155200110073882</p></div>
                                   </div>
                               </div>
                               
@@ -250,11 +250,11 @@ const Services = () => {
                                   <div className="space-y-4">
                                       <div>
                                           <p className="text-[10px] text-zinc-500 uppercase">Binance Pay ID</p>
-                                          <p className="text-[var(--gta-green)] font-mono font-bold text-sm">123456789</p>
+                                          <p className="text-[var(--gta-green)] font-mono font-bold text-sm">577115246</p>
                                       </div>
                                       <div>
                                           <p className="text-[10px] text-zinc-500 uppercase">USDT (TRC20)</p>
-                                          <p className="text-white text-[10px] break-all font-mono">TDq8...crypto_wallet...xyz</p>
+                                          <p className="text-white text-[10px] break-all font-mono">TDhVpGzM6s6u8T4osAUR9Yqh14o5Hgoj8u</p>
                                       </div>
                                       <p className="text-[10px] text-yellow-500 italic mt-2">* Send screenshot of transaction.</p>
                                   </div>

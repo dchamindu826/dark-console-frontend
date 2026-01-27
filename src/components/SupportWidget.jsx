@@ -6,8 +6,8 @@ const SupportWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   // 🔥 මෙතනට ඔයාගේ ලින්ක් දාන්න
-  const whatsappLink = "https://wa.me/94701234567"; 
-  const discordLink = "https://discord.gg/yourserver"; 
+  const whatsappLink = "https://wa.me/94764696933"; 
+  const discordLink = "https://discord.gg/naRBV7dwbF"; 
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4">
