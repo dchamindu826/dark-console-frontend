@@ -1,36 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { MessageSquare, CheckCircle, XCircle, Clock, Archive, Send, X, User } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { MessageSquare, CheckCircle, XCircle, Clock, Archive, Send, X, User, Image, Reply } from 'lucide-react';
 import apiClient from '../../api/client';
 import { formatLKR } from '../../utils/currency';
 import io from 'socket.io-client';
 
-// --- CHAT WINDOW COMPONENT ---
+// --- CHAT WINDOW COMPONENT (ADMIN SIDE) ---
 const socket = io.connect("https://dark-console-backend.onrender.com");
 
 const AdminChatWindow = ({ order, onClose }) => {
     const [msg, setMsg] = useState("");
+    const [image, setImage] = useState(null); // 🔥 Image State
+    const [replyTo, setReplyTo] = useState(null); // 🔥 Reply State
     const [list, setList] = useState([]);
     const adminInfo = JSON.parse(localStorage.getItem('adminInfo'));
+    const scrollRef = useRef(null);
 
     useEffect(() => {
         socket.emit("join_room", order.chatRoomId);
         // Load messages (Real-time)
-        socket.on("receive_message", (data) => setList((l) => [...l, data]));
+        socket.on("receive_message", (data) => {
+            setList((l) => [...l, data]);
+            scrollToBottom();
+        });
         return () => socket.off("receive_message");
     }, [order]);
 
+    const scrollToBottom = () => {
+        setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    };
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => setImage(reader.result);
+            reader.readAsDataURL(file);
+        }
+    };
+
     const send = async () => {
-        if(msg !== "") {
+        if (msg !== "" || image) {
             const data = { 
                 room: order.chatRoomId, 
                 author: adminInfo.username, 
                 message: msg, 
+                image: image, // 🔥 Send Image
+                replyTo: replyTo, // 🔥 Send Reply Context
                 time: new Date().toLocaleTimeString(), 
                 type: 'admin' 
             };
             await socket.emit("send_message", data);
-            setList((l) => [...l, data]);
+            
+            // Note: We don't manually setList here because the socket will echo it back via 'receive_message'
             setMsg("");
+            setImage(null);
+            setReplyTo(null);
         }
     };
 
@@ -51,32 +75,86 @@ const AdminChatWindow = ({ order, onClose }) => {
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-black/20 custom-scrollbar">
                     {list.length === 0 && <p className="text-center text-zinc-600 text-xs italic mt-10">Start the conversation...</p>}
-                    {list.map((m,i) => (
-                        <div key={i} className={`flex flex-col ${m.type === 'admin' ? 'items-end' : 'items-start'}`}>
-                            <div className={`px-4 py-2 rounded-2xl max-w-[85%] text-sm ${
-                                m.type === 'admin' 
-                                ? 'bg-[var(--gta-green)] text-black font-medium rounded-tr-none' 
-                                : 'bg-zinc-800 text-white rounded-tl-none border border-zinc-700'
-                            }`}>
-                                {m.message}
+                    {list.map((m, i) => (
+                        <div key={i} className={`flex flex-col ${m.type === 'admin' ? 'items-end' : 'items-start'} group`}>
+                            
+                            {/* Reply Action Button (Show on Hover) */}
+                            <div className={`flex items-end gap-2 ${m.type === 'admin' ? 'flex-row-reverse' : 'flex-row'}`}>
+                                
+                                <div className={`px-4 py-2 rounded-2xl max-w-[85%] text-sm relative ${
+                                    m.type === 'admin' 
+                                    ? 'bg-[var(--gta-green)] text-black font-medium rounded-tr-none' 
+                                    : 'bg-zinc-800 text-white rounded-tl-none border border-zinc-700'
+                                }`}>
+                                    {/* Render Reply Context */}
+                                    {m.replyTo && (
+                                        <div className={`mb-2 p-2 rounded text-xs border-l-2 ${m.type === 'admin' ? 'bg-black/10 border-black' : 'bg-black/30 border-[var(--gta-green)]'}`}>
+                                            <p className="font-bold opacity-70">{m.replyTo.author}</p>
+                                            <p className="truncate opacity-70">{m.replyTo.image ? '📷 [Image]' : m.replyTo.message}</p>
+                                        </div>
+                                    )}
+
+                                    {/* Render Image */}
+                                    {m.image && (
+                                        <img src={m.image} alt="Sent" className="rounded-lg mb-1 max-w-full max-h-48 object-cover"/>
+                                    )}
+
+                                    {/* Render Text */}
+                                    {m.message && <p>{m.message}</p>}
+                                </div>
+
+                                {/* Reply Button */}
+                                <button onClick={() => setReplyTo(m)} className="opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-white transition-opacity">
+                                    <Reply size={14}/>
+                                </button>
                             </div>
+                            
                             <span className="text-[10px] text-zinc-600 mt-1 px-1">{m.time}</span>
                         </div>
                     ))}
+                    <div ref={scrollRef}></div>
                 </div>
 
-                {/* Input */}
-                <div className="p-4 border-t border-zinc-700 bg-zinc-800 rounded-b-2xl flex gap-2">
-                    <input 
-                        value={msg} 
-                        onChange={e=>setMsg(e.target.value)} 
-                        onKeyPress={(e) => e.key === 'Enter' && send()}
-                        className="flex-1 bg-black border border-zinc-600 p-3 rounded-xl text-white text-sm focus:border-[var(--gta-green)] outline-none transition-colors" 
-                        placeholder="Type your message..." 
-                    />
-                    <button onClick={send} className="bg-[var(--gta-green)] hover:bg-emerald-500 text-black p-3 rounded-xl transition-colors">
-                        <Send size={20}/>
-                    </button>
+                {/* Input Area */}
+                <div className="p-4 border-t border-zinc-700 bg-zinc-800 rounded-b-2xl">
+                    
+                    {/* Reply Preview Banner */}
+                    {replyTo && (
+                        <div className="flex items-center justify-between bg-black/40 p-2 rounded-lg mb-2 border-l-2 border-[var(--gta-green)]">
+                            <div className="text-xs text-zinc-300">
+                                <span className="font-bold text-[var(--gta-green)]">Replying to {replyTo.author}:</span>
+                                <p className="truncate max-w-[200px]">{replyTo.image ? '📷 [Image]' : replyTo.message}</p>
+                            </div>
+                            <button onClick={() => setReplyTo(null)} className="text-zinc-500 hover:text-white"><X size={14}/></button>
+                        </div>
+                    )}
+
+                    {/* Image Preview Banner */}
+                    {image && (
+                        <div className="relative w-16 h-16 mb-2">
+                            <img src={image} alt="Preview" className="w-full h-full object-cover rounded-lg border border-zinc-600"/>
+                            <button onClick={() => setImage(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5"><X size={12}/></button>
+                        </div>
+                    )}
+
+                    <div className="flex gap-2">
+                        {/* Image Upload Button */}
+                        <label className="bg-zinc-700 hover:bg-zinc-600 p-3 rounded-xl cursor-pointer transition-colors text-white flex items-center justify-center">
+                            <Image size={20}/>
+                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                        </label>
+
+                        <input 
+                            value={msg} 
+                            onChange={e=>setMsg(e.target.value)} 
+                            onKeyPress={(e) => e.key === 'Enter' && send()}
+                            className="flex-1 bg-black border border-zinc-600 p-3 rounded-xl text-white text-sm focus:border-[var(--gta-green)] outline-none transition-colors" 
+                            placeholder={image ? "Add a caption..." : "Type your message..."}
+                        />
+                        <button onClick={send} className="bg-[var(--gta-green)] hover:bg-emerald-500 text-black p-3 rounded-xl transition-colors">
+                            <Send size={20}/>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -96,7 +174,6 @@ const MyJobs = () => {
 
   const fetchJobs = async () => {
     try {
-        // Backend eken auto filter wenawa logged in admin ta adala jobs witharak
         const { data } = await apiClient.get('/orders');
         setJobs(data);
     } catch (error) {
@@ -110,20 +187,19 @@ const MyJobs = () => {
       let reason = "";
       if(status === 'cancelled') {
           reason = prompt("Please enter the reason for cancellation:");
-          if(!reason) return; // Cancel clicked but no reason given
+          if(!reason) return; 
       }
       
       if(window.confirm(`Mark this job as ${status}? This cannot be undone.`)) {
           try {
               await apiClient.put(`/orders/${id}/status`, { status, reason });
-              fetchJobs(); // Refresh list
+              fetchJobs(); 
           } catch (error) {
               alert("Update Failed");
           }
       }
   };
 
-  // Filter Jobs
   const activeJobs = jobs.filter(j => j.status === 'in_progress');
   const completedJobs = jobs.filter(j => j.status === 'completed' || j.status === 'cancelled');
 
@@ -157,16 +233,16 @@ const MyJobs = () => {
        {/* 2. TABS */}
        <div className="flex gap-4 mb-6 border-b border-zinc-800 pb-1">
            <button 
-                onClick={() => setViewMode('active')}
-                className={`pb-3 px-4 text-sm font-bold uppercase tracking-wider transition-all border-b-2 ${viewMode === 'active' ? 'text-[var(--gta-green)] border-[var(--gta-green)]' : 'text-zinc-500 border-transparent hover:text-white'}`}
-            >
-                Active Queue ({activeJobs.length})
+               onClick={() => setViewMode('active')}
+               className={`pb-3 px-4 text-sm font-bold uppercase tracking-wider transition-all border-b-2 ${viewMode === 'active' ? 'text-[var(--gta-green)] border-[var(--gta-green)]' : 'text-zinc-500 border-transparent hover:text-white'}`}
+           >
+               Active Queue ({activeJobs.length})
            </button>
            <button 
-                onClick={() => setViewMode('history')}
-                className={`pb-3 px-4 text-sm font-bold uppercase tracking-wider transition-all border-b-2 ${viewMode === 'history' ? 'text-[var(--gta-green)] border-[var(--gta-green)]' : 'text-zinc-500 border-transparent hover:text-white'}`}
-            >
-                History ({completedJobs.length})
+               onClick={() => setViewMode('history')}
+               className={`pb-3 px-4 text-sm font-bold uppercase tracking-wider transition-all border-b-2 ${viewMode === 'history' ? 'text-[var(--gta-green)] border-[var(--gta-green)]' : 'text-zinc-500 border-transparent hover:text-white'}`}
+           >
+               History ({completedJobs.length})
            </button>
        </div>
 
@@ -203,20 +279,20 @@ const MyJobs = () => {
                    {viewMode === 'active' && (
                        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                            <button 
-                                onClick={() => setActiveChat(job)}
-                                className="bg-white hover:bg-zinc-200 text-black font-black uppercase px-6 py-3 rounded-lg flex items-center justify-center gap-2 text-sm"
+                               onClick={() => setActiveChat(job)}
+                               className="bg-white hover:bg-zinc-200 text-black font-black uppercase px-6 py-3 rounded-lg flex items-center justify-center gap-2 text-sm"
                            >
                                <MessageSquare size={18}/> Open Chat
                            </button>
                            <button 
-                                onClick={() => handleUpdateStatus(job._id, 'completed')}
-                                className="bg-[var(--gta-green)] hover:bg-emerald-500 text-black font-black uppercase px-6 py-3 rounded-lg flex items-center justify-center gap-2 text-sm"
+                               onClick={() => handleUpdateStatus(job._id, 'completed')}
+                               className="bg-[var(--gta-green)] hover:bg-emerald-500 text-black font-black uppercase px-6 py-3 rounded-lg flex items-center justify-center gap-2 text-sm"
                            >
                                <CheckCircle size={18}/> Complete
                            </button>
                            <button 
-                                onClick={() => handleUpdateStatus(job._id, 'cancelled')}
-                                className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white font-black uppercase px-6 py-3 rounded-lg flex items-center justify-center gap-2 text-sm border border-red-500/50 transition-all"
+                               onClick={() => handleUpdateStatus(job._id, 'cancelled')}
+                               className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white font-black uppercase px-6 py-3 rounded-lg flex items-center justify-center gap-2 text-sm border border-red-500/50 transition-all"
                            >
                                <XCircle size={18}/> Cancel
                            </button>
