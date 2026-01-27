@@ -12,7 +12,6 @@ import Profile from './pages/Profile';
 import Events from './pages/Events';
 import EventsDisplay from './components/EventsDisplay';
 import FeedbackDisplay from './components/FeedbackDisplay';
-// 🔥 1. IMPORT COMMUNITY CHAT
 
 
 import Footer from './components/Footer'; 
@@ -39,7 +38,7 @@ import ManageFeedbacks from './pages/admin/ManageFeedbacks';
 import apiClient from './api/client';
 import { formatLKR } from './utils/currency';
 
-// --- LIVE STREAM COMPONENT ---
+// --- LIVE STREAM COMPONENT (UPDATED FOR YOUTUBE SECURITY) ---
 const LiveStream = () => {
     const [link, setLink] = useState("");
     useEffect(() => {
@@ -59,10 +58,14 @@ const LiveStream = () => {
                 <div className="aspect-video w-full rounded-2xl overflow-hidden border border-zinc-800 shadow-[0_0_50px_rgba(34,197,94,0.1)]">
                     <iframe 
                         className="w-full h-full"
-                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`}
+                        // 🔥 Update 1: Added 'rel=0' & 'modestbranding=1'
+                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&modestbranding=1`}
                         title="Live Stream"
                         frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        // 🔥 Update 2: Added 'web-share' to allow list
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        // 🔥 Update 3: Added referrerPolicy (MEKA THAMA WADAGATHMA DE)
+                        referrerPolicy="strict-origin-when-cross-origin"
                         allowFullScreen
                     ></iframe>
                 </div>
