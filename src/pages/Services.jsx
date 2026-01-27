@@ -73,7 +73,7 @@ const Services = () => {
     const finalPrice = selectedProduct.price * ((100 - discount) / 100);
 
     const orderData = {
-        userId: user.uid, // 🔥🔥 MEKA ADD KARANNA ONA (Meka nisa thama profile eke nopenune)
+        userId: user.uid, // 🔥🔥 ADDED: This links the order to the user profile
         orderType: 'service',
         customer: { name: user.displayName, contact: contact },
         packageDetails: {
