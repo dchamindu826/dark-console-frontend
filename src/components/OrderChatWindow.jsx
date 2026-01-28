@@ -107,17 +107,20 @@ const ChatWindow = ({ order, user, onClose }) => {
                     {list.length === 0 && <p className="text-center text-zinc-600 text-xs italic mt-10">Start chatting with us...</p>}
                     
                     {list.map((m, i) => {
-                        // Admin ද Customer ද කියලා බලනවා
+                        // Logic: Customer (Me) vs Admin (Them)
                         const isMe = !m.isAdmin && (m.senderId === user.uid || m.author === user.displayName);
                         
                         return (
                             <div key={i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} group`}>
                                 <div className={`max-w-[85%] rounded-2xl p-3 relative text-sm ${
                                     isMe 
-                                    ? 'bg-[var(--gta-green)] text-black rounded-tr-none' 
-                                    : 'bg-zinc-800 text-white rounded-tl-none border border-zinc-700'
+                                    ? 'bg-[var(--gta-green)] text-black rounded-tr-none' // Customer: Right (Green)
+                                    : 'bg-zinc-800 text-white rounded-tl-none border border-zinc-700' // Admin: Left (Dark Gray)
                                 }`}>
                                     
+                                    {/* Admin Label */}
+                                    {!isMe && <p className="text-[10px] text-blue-400 font-bold mb-1">Support Team</p>}
+
                                     {/* Reply Context */}
                                     {m.replyTo && (
                                         <div className={`text-[10px] mb-2 p-2 rounded border-l-2 ${isMe ? 'bg-black/10 border-black' : 'bg-black/30 border-[var(--gta-green)]'}`}>

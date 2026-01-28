@@ -175,11 +175,20 @@ const AdminChats = () => {
                     {/* Messages */}
                     <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-[#0a0a0a]">
                         {messages.map((m, i) => {
-                            const isMe = m.author === adminName || m.senderName === adminName || m.isAdmin;
+                            // Logic: Admin (Me) = Right (Blue). Customer (Them) = Left (Gray).
+                            const isMe = m.isAdmin || m.author === adminName; 
+                            
                             return (
                                 <div key={i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                    <div className={`max-w-[70%] rounded-2xl p-3 relative group ${isMe ? 'bg-[var(--gta-green)] text-black rounded-tr-none' : 'bg-zinc-800 text-white rounded-tl-none'}`}>
+                                    <div className={`max-w-[70%] rounded-2xl p-3 relative group ${
+                                        isMe 
+                                        ? 'bg-blue-600 text-white rounded-tr-none' // Admin Color: Blue (Right)
+                                        : 'bg-zinc-800 text-white rounded-tl-none border border-zinc-700' // Customer Color: Gray (Left)
+                                    }`}>
                                         
+                                        {/* Customer Name Label (Only for Left messages) */}
+                                        {!isMe && <p className="text-[10px] text-[var(--gta-green)] font-bold mb-1">{m.senderName || m.author}</p>}
+
                                         {/* Reply Context */}
                                         {m.replyTo && (
                                             <div className={`text-[10px] mb-2 p-2 rounded border-l-2 ${isMe ? 'bg-black/10 border-black' : 'bg-black/20 border-[var(--gta-green)]'}`}>
