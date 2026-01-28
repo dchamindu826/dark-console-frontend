@@ -35,8 +35,11 @@ const Services = () => {
   const fetchServices = async () => {
     try {
       const { data } = await apiClient.get('/services');
+      console.log("🔥 Raw Data from Backend:", data); // Check this in Console
       setServices(data);
-    } catch (error) { console.error("Failed load services"); }
+    } catch (error) { 
+        console.error("Failed load services", error); 
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -73,7 +76,7 @@ const Services = () => {
     const finalPrice = selectedProduct.price * ((100 - discount) / 100);
 
     const orderData = {
-        userId: user.uid, // 🔥🔥 ADDED: This links the order to the user profile
+        userId: user.uid, // 🔥 Added userId to link order to profile
         orderType: 'service',
         customer: { name: user.displayName, contact: contact },
         packageDetails: {
