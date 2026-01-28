@@ -7,7 +7,7 @@ const socket = io.connect("https://api.dark-console.com");
 
 const AdminChats = () => {
   const [activeTab, setActiveTab] = useState('inbox'); // inbox, community, events
-  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [selectedRoom, setSelectedRoom] = useState(null); // Contains: { id, type, label, orderId }
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [replyTo, setReplyTo] = useState(null);
@@ -31,19 +31,25 @@ const AdminChats = () => {
   }, []);
 
   // --- JOIN ROOM & LOAD HISTORY ---
-  const handleSelectRoom = async (roomName, type, label) => {
-      setSelectedRoom({ id: roomName, type, label });
+  const handleSelectRoom = async (roomName, type, label, orderId = null) => {
+      setSelectedRoom({ id: roomName, type, label, orderId });
       setMessages([]); 
       setReplyTo(null);
       
       socket.emit("join_room", roomName);
 
       try {
-          const { data } = await apiClient.get(`/chats/${roomName}`);
+          // 🔥 Load messages from correct endpoint based on type
+          let endpoint = `/chats/${roomName}`;
+          if (type === 'inbox' && orderId) {
+             endpoint = `/orders/${orderId}/messages`; // Order Chat endpoint
+          }
+          
+          const { data } = await apiClient.get(endpoint);
           setMessages(data);
           scrollToBottom();
       } catch (err) {
-          console.error("Failed to load chat history");
+          console.error("Failed to load chat history", err);
       }
   };
 
@@ -68,17 +74,21 @@ const AdminChats = () => {
 
       const data = {
           room: selectedRoom.id,
+          orderId: selectedRoom.orderId, // 🔥 REQUIRED to save in DB
           author: adminName,
+          senderName: adminName,
           message: imgData ? "Sent an image" : input,
-          type: imgData ? 'image' : 'text', // Check logic
-          attachment: imgData,
+          type: imgData ? 'image' : 'text',
+          attachment: imgData, // For backward compatibility
+          image: imgData,      // For new schema
           replyTo: replyTo,
+          isAdmin: true,       // Mark as admin
           createdAt: new Date().toISOString()
       };
 
       socket.emit("send_message", data);
       
-      // Local Append (Socket listener will handle this, but for instant feedback):
+      // Optimistic update (show immediately)
       // setMessages(m => [...m, data]); 
       
       setInput("");
@@ -87,12 +97,15 @@ const AdminChats = () => {
 
   // --- SOCKET LISTENER ---
   useEffect(() => {
-      socket.off("receive_message").on("receive_message", (data) => {
+      const handleMsg = (data) => {
           if (selectedRoom && data.room === selectedRoom.id) {
               setMessages(m => [...m, data]);
               scrollToBottom();
           }
-      });
+      };
+
+      socket.on("receive_message", handleMsg);
+      return () => socket.off("receive_message", handleMsg);
   }, [selectedRoom]);
 
   return (
@@ -118,7 +131,11 @@ const AdminChats = () => {
             <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
                 {/* INBOX (Orders) */}
                 {activeTab === 'inbox' && activeOrders.map(order => (
-                    <div key={order._id} onClick={() => handleSelectRoom(order.chatRoomId, 'inbox', order.customer.name)} className={`p-4 rounded-lg cursor-pointer border-b border-zinc-800/50 mb-1 ${selectedRoom?.id === order.chatRoomId ? 'bg-white/10' : 'hover:bg-white/5'}`}>
+                    <div 
+                        key={order._id} 
+                        onClick={() => handleSelectRoom(order.chatRoomId, 'inbox', order.customer.name, order._id)} 
+                        className={`p-4 rounded-lg cursor-pointer border-b border-zinc-800/50 mb-1 ${selectedRoom?.id === order.chatRoomId ? 'bg-white/10' : 'hover:bg-white/5'}`}
+                    >
                         <p className="text-white font-bold text-sm">{order.customer.name}</p>
                         <p className="text-zinc-500 text-xs">Order #{order._id.slice(-4)}</p>
                     </div>
@@ -158,7 +175,7 @@ const AdminChats = () => {
                     {/* Messages */}
                     <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-[#0a0a0a]">
                         {messages.map((m, i) => {
-                            const isMe = m.author === adminName;
+                            const isMe = m.author === adminName || m.senderName === adminName || m.isAdmin;
                             return (
                                 <div key={i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                                     <div className={`max-w-[70%] rounded-2xl p-3 relative group ${isMe ? 'bg-[var(--gta-green)] text-black rounded-tr-none' : 'bg-zinc-800 text-white rounded-tl-none'}`}>
@@ -166,25 +183,25 @@ const AdminChats = () => {
                                         {/* Reply Context */}
                                         {m.replyTo && (
                                             <div className={`text-[10px] mb-2 p-2 rounded border-l-2 ${isMe ? 'bg-black/10 border-black' : 'bg-black/20 border-[var(--gta-green)]'}`}>
-                                                <span className="font-bold opacity-70">{m.replyTo.author}</span>
+                                                <span className="font-bold opacity-70">{m.replyTo.author || m.replyTo.senderName}</span>
                                                 <p className="truncate opacity-60">{m.replyTo.message}</p>
                                             </div>
                                         )}
 
                                         {/* Content */}
-                                        {m.type === 'image' ? (
-                                            <img src={m.attachment} className="w-full rounded-lg max-h-60 object-cover cursor-pointer" onClick={()=>window.open(m.attachment)}/>
+                                        {(m.type === 'image' || m.image) ? (
+                                            <img src={m.image || m.attachment} className="w-full rounded-lg max-h-60 object-cover cursor-pointer" onClick={()=>window.open(m.image || m.attachment)}/>
                                         ) : (
                                             <p className="text-sm whitespace-pre-wrap">{m.message}</p>
                                         )}
 
                                         <span className={`text-[9px] font-bold block mt-1 opacity-50 ${isMe ? 'text-right' : 'text-left'}`}>
-                                            {m.author} • {new Date(m.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                                            {m.author || m.senderName} • {new Date(m.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
                                         </span>
 
                                         {/* Reply Button (Hover) */}
                                         <button 
-                                            onClick={() => setReplyTo({ id: m._id, author: m.author, message: m.message })}
+                                            onClick={() => setReplyTo({ id: m._id, author: m.author || m.senderName, message: m.message })}
                                             className={`absolute top-2 ${isMe ? '-left-8' : '-right-8'} opacity-0 group-hover:opacity-100 bg-zinc-800 p-1 rounded-full text-zinc-400 hover:text-white transition-all`}
                                         >
                                             <Reply size={12}/>
