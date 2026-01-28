@@ -99,7 +99,12 @@ const FeaturedPackages = () => {
                     {services.slice(0, 4).map(service => ( 
                         <div key={service._id} className="group relative bg-black border border-zinc-800 rounded-2xl overflow-hidden hover:border-[var(--gta-green)] transition-all duration-300 hover:-translate-y-2">
                             <div className="aspect-[2/3] w-full relative overflow-hidden">
-                                <img src={service.image} alt={service.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
+                                {/* 🔥 FIXED IMAGE URL FOR LANDING PAGE */}
+                                <img 
+                                    src={`https://api.dark-console.com/api/services/${service._id}/image`} 
+                                    alt={service.title} 
+                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90"></div>
                                 <div className="absolute bottom-4 left-4">
                                     <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Starting at</p>
