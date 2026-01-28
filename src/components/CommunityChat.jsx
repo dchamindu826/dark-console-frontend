@@ -3,7 +3,7 @@ import { Send, Image, Trash2, Reply, AlertTriangle } from 'lucide-react';
 import apiClient from '../api/client';
 import io from 'socket.io-client';
 
-const socket = io.connect("https://dark-console-backend.onrender.com");
+const socket = io.connect("https://api.dark-console.com");
 
 const CommunityChat = () => {
   // ... (State logic කලින් විදියමයි - වෙනස් කරන්න එපා) ...

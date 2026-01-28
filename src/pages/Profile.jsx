@@ -7,7 +7,7 @@ import io from 'socket.io-client';
 import { auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 
-const socket = io.connect("https://dark-console-backend.onrender.com");
+const socket = io.connect("https://api.dark-console.com");
 
 // --- USER CHAT COMPONENT (WITH IMAGE & REPLY) ---
 const UserChatWindow = ({ order, onClose, username }) => {

@@ -5,7 +5,7 @@ import { formatLKR } from '../../utils/currency';
 import io from 'socket.io-client';
 
 // --- CHAT WINDOW COMPONENT (ADMIN SIDE) ---
-const socket = io.connect("https://dark-console-backend.onrender.com");
+const socket = io.connect("https://api.dark-console.com");
 
 const AdminChatWindow = ({ order, onClose }) => {
     const [msg, setMsg] = useState("");

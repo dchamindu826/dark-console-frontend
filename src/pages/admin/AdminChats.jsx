@@ -3,7 +3,7 @@ import { MessageSquare, Users, Calendar, Send, Trash2, Image as ImageIcon, Reply
 import apiClient from '../../api/client';
 import io from 'socket.io-client';
 
-const socket = io.connect("https://dark-console-backend.onrender.com");
+const socket = io.connect("https://api.dark-console.com");
 
 const AdminChats = () => {
   const [activeTab, setActiveTab] = useState('inbox'); // inbox, community, events

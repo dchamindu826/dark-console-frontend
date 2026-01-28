@@ -7,7 +7,7 @@ import { auth } from '../firebase';
 import io from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 
-const socket = io.connect("https://dark-console-backend.onrender.com");
+const socket = io.connect("https://api.dark-console.com");
 
 // --- COUNTDOWN COMPONENT ---
 const Countdown = ({ targetDate, targetTime }) => {

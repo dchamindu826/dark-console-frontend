@@ -3,7 +3,7 @@ import { Send, User, Shield } from 'lucide-react';
 import apiClient from '../api/client';
 import io from 'socket.io-client';
 
-const socket = io.connect("https://dark-console-backend.onrender.com"); // Check URL
+const socket = io.connect("https://api.dark-console.com");
 
 const OrderChatWindow = ({ orderId, currentUser, isCustomerView }) => {
     const [messages, setMessages] = useState([]);
