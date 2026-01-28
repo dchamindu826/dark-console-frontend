@@ -61,7 +61,12 @@ const Leaderboard = () => {
                     ${isFirst ? 'from-yellow-400 to-orange-600 w-48' : player.rank === 2 ? 'from-zinc-300 to-zinc-500 w-40' : 'from-orange-400 to-amber-800 w-40'}
                 `}>
                     <div className="bg-zinc-900 rounded-xl p-1 overflow-hidden relative">
-                        <img src={player.avatar} className="w-full aspect-square object-cover rounded-lg" />
+                        {/* 🔥 FIXED IMAGE URL FOR TOP 3 */}
+                        <img 
+                            src={`https://api.dark-console.com/api/leaderboard/${player._id}/image`} 
+                            className="w-full aspect-square object-cover rounded-lg" 
+                            alt={player.name}
+                        />
                         
                         {/* Rank Badge */}
                         <div className="absolute top-2 right-2 bg-black/80 backdrop-blur px-3 py-1 rounded text-white font-black text-sm border border-white/10">
@@ -95,7 +100,14 @@ const Leaderboard = () => {
                     className="flex items-center p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-[var(--gta-green)] hover:bg-zinc-900 transition-all group"
                 >
                     <div className="font-black text-zinc-600 text-2xl w-12 group-hover:text-[var(--gta-green)] transition-colors">#{player.rank}</div>
-                    <img src={player.avatar} className="w-12 h-12 rounded-lg object-cover border border-zinc-700 mr-4" />
+                    
+                    {/* 🔥 FIXED IMAGE URL FOR OTHERS */}
+                    <img 
+                        src={`https://api.dark-console.com/api/leaderboard/${player._id}/image`} 
+                        className="w-12 h-12 rounded-lg object-cover border border-zinc-700 mr-4" 
+                        alt={player.name}
+                    />
+                    
                     <div className="flex-1">
                         <h4 className="font-bold text-white uppercase">{player.name}</h4>
                         <p className="text-xs text-zinc-500 uppercase font-bold">Runner Up</p>
