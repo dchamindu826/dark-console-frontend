@@ -35,7 +35,7 @@ const Services = () => {
   const fetchServices = async () => {
     try {
       const { data } = await apiClient.get('/services');
-      console.log("🔥 Raw Data from Backend:", data); // Check this in Console
+      console.log("🔥 Raw Data:", data);
       setServices(data);
     } catch (error) { 
         console.error("Failed load services", error); 
@@ -70,13 +70,13 @@ const Services = () => {
 
   const handlePlaceOrder = async () => {
     if(!contact || !slipImage) return alert("Please enter WhatsApp number and upload slip!");
-    if(!user) return alert("Please login to place an order!"); // Safety check
+    if(!user) return alert("Please login to place an order!");
     
     setIsSubmitting(true);
     const finalPrice = selectedProduct.price * ((100 - discount) / 100);
 
     const orderData = {
-        userId: user.uid, // 🔥 Added userId to link order to profile
+        userId: user.uid,
         orderType: 'service',
         customer: { name: user.displayName, contact: contact },
         packageDetails: {
@@ -92,7 +92,6 @@ const Services = () => {
         await apiClient.post('/orders', orderData);
         alert("Order Placed Successfully!");
         
-        // Clear & Redirect
         setSelectedProduct(null);
         setSlipImage(null);
         navigate('/profile'); 
@@ -111,15 +110,9 @@ const Services = () => {
     <div className="bg-[#09090b] min-h-screen text-white pt-24 pb-20">
       <Header />
       
-      {/* Scrollbar Hide CSS */}
       <style>{`
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
       <div className="max-w-7xl mx-auto px-4">
@@ -155,7 +148,12 @@ const Services = () => {
                   className="bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 group hover:border-[var(--gta-green)] transition-all duration-300 hover:shadow-2xl hover:shadow-green-900/20 flex flex-col h-full"
                 >
                     <div className="aspect-video w-full bg-black relative overflow-hidden">
-                         <img src={product.image} alt={product.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                         {/* 🔥 FIXED IMAGE URL HERE */}
+                         <img 
+                            src={`https://api.dark-console.com/api/services/${product._id}/image`} 
+                            alt={product.title} 
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                         />
                          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent opacity-80"></div>
                          <div className="absolute bottom-4 left-4 right-4">
                             <h3 className="text-xl font-black uppercase text-white leading-tight drop-shadow-md">{product.title}</h3>
@@ -189,7 +187,11 @@ const Services = () => {
                   {/* Left Side: Product Info */}
                   <div className="w-full md:w-1/3 bg-zinc-900 p-8 flex flex-col">
                       <div className="w-full aspect-video rounded-xl overflow-hidden mb-6 border border-zinc-700">
-                          <img src={selectedProduct.image} className="w-full h-full object-cover" />
+                          {/* 🔥 FIXED IMAGE URL HERE TOO */}
+                          <img 
+                            src={`https://api.dark-console.com/api/services/${selectedProduct._id}/image`} 
+                            className="w-full h-full object-cover" 
+                          />
                       </div>
                       <h2 className="text-2xl font-black uppercase text-white mb-2 leading-none">{selectedProduct.title}</h2>
                       <p className="text-[var(--gta-green)] font-sans font-bold text-2xl mb-4">{formatLKR(selectedProduct.price)}</p>
@@ -237,7 +239,6 @@ const Services = () => {
 
                           {/* PAYMENT OPTIONS */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {/* Bank Details */}
                               <div className="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
                                   <p className="text-xs font-bold text-zinc-400 uppercase border-b border-zinc-800 pb-2 mb-2">Local Bank Transfer</p>
                                   <div className="space-y-2">
@@ -248,7 +249,6 @@ const Services = () => {
                                   </div>
                               </div>
                               
-                              {/* Crypto Details */}
                               <div className="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
                                   <p className="text-xs font-bold text-zinc-400 uppercase border-b border-zinc-800 pb-2 mb-2">Crypto Payment</p>
                                   <div className="space-y-4">
@@ -260,7 +260,6 @@ const Services = () => {
                                           <p className="text-[10px] text-zinc-500 uppercase">USDT (TRC20)</p>
                                           <p className="text-white text-[10px] break-all font-mono">TDhVpGzM6s6u8T4osAUR9Yqh14o5Hgoj8u</p>
                                       </div>
-                                      <p className="text-[10px] text-yellow-500 italic mt-2">* Send screenshot of transaction.</p>
                                   </div>
                               </div>
                           </div>
