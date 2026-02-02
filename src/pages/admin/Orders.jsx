@@ -6,11 +6,11 @@ import { formatLKR } from '../../utils/currency';
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState('pending'); // pending, completed, cancelled
-  const [selectedSlip, setSelectedSlip] = useState(null);
+  const [selectedSlipId, setSelectedSlipId] = useState(null); // 🔥 Changed to store ID
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9; // Grid view ekata 9k wage hondai
+  const itemsPerPage = 9; 
 
   useEffect(() => {
     fetchOrders();
@@ -20,7 +20,7 @@ const Orders = () => {
     try {
         const { data } = await apiClient.get(`/orders?status=${activeTab}`);
         setOrders(data);
-        setCurrentPage(1); // Tab maru weddi page 1 ta yanna
+        setCurrentPage(1); 
     } catch (error) {
         console.error("Error fetching orders");
     }
@@ -102,7 +102,9 @@ const Orders = () => {
                 {/* Actions (Only for Pending) */}
                 {activeTab === 'pending' ? (
                     <div className="flex gap-2 mt-auto pt-4 pl-2">
-                        <button onClick={() => setSelectedSlip(order.paymentSlip)} className="flex-1 bg-zinc-800 py-3 rounded-lg text-xs font-bold uppercase flex justify-center items-center gap-2 hover:bg-white hover:text-black transition-colors"><Eye size={16}/> Slip</button>
+                        {/* 🔥 FIX: Pass Order ID here */}
+                        <button onClick={() => setSelectedSlipId(order._id)} className="flex-1 bg-zinc-800 py-3 rounded-lg text-xs font-bold uppercase flex justify-center items-center gap-2 hover:bg-white hover:text-black transition-colors"><Eye size={16}/> Slip</button>
+                        
                         <button onClick={() => handleApprove(order._id)} className="flex-1 bg-[var(--gta-green)] py-3 rounded-lg text-xs font-bold uppercase flex justify-center items-center gap-2 text-black hover:bg-emerald-500 transition-colors shadow-lg shadow-green-900/20"><Check size={16}/> Accept</button>
                         <button onClick={() => handleReject(order._id)} className="px-4 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors border border-red-500/20"><X size={18}/></button>
                     </div>
@@ -140,12 +142,18 @@ const Orders = () => {
           </div>
       )}
 
-      {/* --- SLIP MODAL --- */}
-      {selectedSlip && (
-          <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedSlip(null)}>
+      {/* --- SLIP MODAL (FIXED) --- */}
+      {selectedSlipId && (
+          <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedSlipId(null)}>
               <div className="relative max-w-2xl w-full">
                 <button className="absolute -top-12 right-0 text-zinc-400 hover:text-white transition-colors bg-zinc-900 p-2 rounded-full"><X/></button>
-                <img src={selectedSlip} className="w-full rounded-xl border border-zinc-700 shadow-2xl" />
+                
+                {/* 🔥 FIX: Load Image from Backend API */}
+                <img 
+                    src={`https://api.dark-console.com/api/orders/${selectedSlipId}/payment-slip`} 
+                    className="w-full rounded-xl border border-zinc-700 shadow-2xl" 
+                    alt="Payment Slip"
+                />
               </div>
           </div>
       )}
