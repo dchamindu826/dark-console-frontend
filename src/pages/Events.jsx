@@ -444,17 +444,17 @@ const Events = () => {
                           <div>
                               <p className="text-[10px] text-zinc-500 font-bold uppercase mb-2 flex items-center gap-2 border-b border-zinc-800 pb-1"><CreditCard size={12}/> Local Bank Transfer</p>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Bank:</span> <span className="text-white font-bold">Sampath Bank</span></div>
-                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Branch:</span> <span className="text-white font-bold">Colombo Super</span></div>
-                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Name:</span> <span className="text-white font-bold">Dark Console Inc</span></div>
-                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Acc No:</span> <span className="text-[var(--gta-green)] font-mono font-bold text-sm">1234 5678 9000</span></div>
+                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Bank:</span> <span className="text-white font-bold">Peoples Bank</span></div>
+                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Branch:</span> <span className="text-white font-bold">Kahawatta</span></div>
+                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Name:</span> <span className="text-white font-bold">Yomal Diloshana</span></div>
+                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Acc No:</span> <span className="text-[var(--gta-green)] font-mono font-bold text-sm">155200110073882</span></div>
                               </div>
                           </div>
                           <div>
                               <p className="text-[10px] text-zinc-500 font-bold uppercase mb-2 flex items-center gap-2 border-b border-zinc-800 pb-1"><Banknote size={12}/> Crypto Payment</p>
                               <div className="space-y-2 text-xs">
-                                  <div className="flex justify-between items-center"><span className="text-zinc-500">Binance Pay ID:</span><span className="text-[var(--gta-green)] font-mono font-bold text-sm">123456789</span></div>
-                                  <div><span className="text-zinc-500 block mb-1">USDT (TRC20):</span><div className="bg-black p-2 rounded text-zinc-400 font-mono break-all border border-zinc-800 text-[10px]">TDq8...crypto_wallet_address...xyz</div></div>
+                                  <div className="flex justify-between items-center"><span className="text-zinc-500">Binance Pay ID:</span><span className="text-[var(--gta-green)] font-mono font-bold text-sm">577115246</span></div>
+                                  <div><span className="text-zinc-500 block mb-1">USDT (TRC20):</span><div className="bg-black p-2 rounded text-zinc-400 font-mono break-all border border-zinc-800 text-[10px]">TDhVpGzM6s6u8T4osAUR9Yqh14o5Hgoj8u</div></div>
                               </div>
                           </div>
                       </div>
