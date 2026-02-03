@@ -61,11 +61,12 @@ const Leaderboard = () => {
                     ${isFirst ? 'from-yellow-400 to-orange-600 w-48' : player.rank === 2 ? 'from-zinc-300 to-zinc-500 w-40' : 'from-orange-400 to-amber-800 w-40'}
                 `}>
                     <div className="bg-zinc-900 rounded-xl p-1 overflow-hidden relative">
-                        {/* 🔥 FIXED IMAGE URL FOR TOP 3 */}
+                        {/* 🔥 FIXED IMAGE URL FOR TOP 3 WITH ERROR HANDLING */}
                         <img 
                             src={`https://api.dark-console.com/api/leaderboard/${player._id}/image`} 
                             className="w-full aspect-square object-cover rounded-lg" 
                             alt={player.name}
+                            onError={(e) => { e.target.onerror = null; e.target.src = "https://cdn-icons-png.flaticon.com/512/847/847969.png"; }}
                         />
                         
                         {/* Rank Badge */}
@@ -101,11 +102,12 @@ const Leaderboard = () => {
                 >
                     <div className="font-black text-zinc-600 text-2xl w-12 group-hover:text-[var(--gta-green)] transition-colors">#{player.rank}</div>
                     
-                    {/* 🔥 FIXED IMAGE URL FOR OTHERS */}
+                    {/* 🔥 FIXED IMAGE URL FOR OTHERS WITH ERROR HANDLING */}
                     <img 
                         src={`https://api.dark-console.com/api/leaderboard/${player._id}/image`} 
                         className="w-12 h-12 rounded-lg object-cover border border-zinc-700 mr-4" 
                         alt={player.name}
+                        onError={(e) => { e.target.onerror = null; e.target.src = "https://cdn-icons-png.flaticon.com/512/847/847969.png"; }}
                     />
                     
                     <div className="flex-1">
