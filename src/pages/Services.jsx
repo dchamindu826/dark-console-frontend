@@ -242,10 +242,10 @@ const Services = () => {
                               <div className="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
                                   <p className="text-xs font-bold text-zinc-400 uppercase border-b border-zinc-800 pb-2 mb-2">Local Bank Transfer</p>
                                   <div className="space-y-2">
-                                      <div><p className="text-[10px] text-zinc-500 uppercase">Bank</p><p className="text-white text-xs font-bold">Peoples Bank</p></div>
-                                      <div><p className="text-[10px] text-zinc-500 uppercase">Branch</p><p className="text-white text-xs font-bold">Kahawatta</p></div>
-                                      <div><p className="text-[10px] text-zinc-500 uppercase">Acc Name</p><p className="text-white text-xs font-bold">Yomal Diloshana</p></div>
-                                      <div><p className="text-[10px] text-zinc-500 uppercase">Acc No</p><p className="text-[var(--gta-green)] font-mono font-bold text-sm">155200110073882</p></div>
+                                      <div className="flex justify-between md:block"><span className="text-zinc-500">Bank:</span> <span className="text-white font-bold">Sapmath bank</span></div>
+                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Branch:</span> <span className="text-white font-bold">Karagampitiya</span></div>
+                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Name:</span> <span className="text-white font-bold">H.W.W. Chathuranga</span></div>
+                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Acc No:</span> <span className="text-[var(--gta-green)] font-mono font-bold text-sm">121052472400</span></div>
                                   </div>
                               </div>
                               

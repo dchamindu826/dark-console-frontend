@@ -444,10 +444,10 @@ const Events = () => {
                           <div>
                               <p className="text-[10px] text-zinc-500 font-bold uppercase mb-2 flex items-center gap-2 border-b border-zinc-800 pb-1"><CreditCard size={12}/> Local Bank Transfer</p>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Bank:</span> <span className="text-white font-bold">Peoples Bank</span></div>
-                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Branch:</span> <span className="text-white font-bold">Kahawatta</span></div>
-                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Name:</span> <span className="text-white font-bold">Yomal Diloshana</span></div>
-                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Acc No:</span> <span className="text-[var(--gta-green)] font-mono font-bold text-sm">155200110073882</span></div>
+                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Bank:</span> <span className="text-white font-bold">Sapmath bank</span></div>
+                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Branch:</span> <span className="text-white font-bold">Karagampitiya</span></div>
+                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Name:</span> <span className="text-white font-bold">H.W.W. Chathuranga</span></div>
+                                  <div className="flex justify-between md:block"><span className="text-zinc-500">Acc No:</span> <span className="text-[var(--gta-green)] font-mono font-bold text-sm">121052472400</span></div>
                               </div>
                           </div>
                           <div>
